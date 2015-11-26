@@ -3,7 +3,8 @@
 import unittest
 import numpy as np
 import sys
-sys.path.append('..')
+#sys.path.append('..')
+sys.path.append('.')
 import array_trilateration
 
 class PointTester(unittest.TestCase):
