@@ -1,22 +1,7 @@
-# As per: https://github.com/linsomniac/python-unittest-skeleton
+# Just run unittests
 
-TESTS = $(wildcard ./tests/test_*.py)
-# XXX Uncomment these lines if you want to test with Python 3.2 and 3.3
-#all.PHONY: test test32 test33
-#
-#test32:
-# @- $(foreach TEST,$(TESTS), \
-	# echo === Running python3 test: $(TEST); \
-	# python3.2 $(TEST); \
-	# )
-#test33:
-# @- $(foreach TEST,$(TESTS), \
-	# echo === Running python3 test: $(TEST); \
-	# python3.3 $(TEST); \
-	# )
 .PHONY: test
+# -B : don't generate bytecode
+# -m : run the module, unittest. Verbose. Look in ./tests/ for tests
 test:
-@- $(foreach TEST,$(TESTS), \
-	echo === Running test: $(TEST); \
-	python -B $(TEST); \
-	)
+	python -B -m unittest discover -v -s ./tests/
