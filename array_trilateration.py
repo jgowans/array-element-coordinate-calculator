@@ -3,6 +3,7 @@
 import argparse
 import numpy as np
 import itertools
+import random
 from point import Point
 from circle import Circle
 
@@ -66,9 +67,9 @@ def trilateration_phase(points_in, distance_matrix):
         points_out.append(approximation)
     return points_out
 
-def build_distance_matrix_from_distances(n, **kwargs):
+def build_distance_matrix_from_distances(n, distances):
     """ n = number of elements.
-    kwargs like: {'d01': 1.23, 'd02': 2.34, ..., 'd34': 5.76}
+    distances like: {'d01': 1.23, 'd02': 2.34, ..., 'd34': 5.76}
     val should be -1 if measurement not taken
     """
     distance_matrix = np.zeros((n, n))
@@ -77,10 +78,29 @@ def build_distance_matrix_from_distances(n, **kwargs):
         el0 = pair[0]
         el1 = pair[1]
         key = 'd{n}{m}'.format(n = el0, m = el1)
-        distance = kwargs[key]
+        distance = distances[key]
         distance_matrix[el0][el1] = distance
         distance_matrix[el1][el0] = distance
     return distance_matrix
+
+def calculate_cost(distances0, distances1):
+    assert(distances0.shape == distances1.shape)
+    cost = 0
+    for n, m in itertools.combinations(range(0, distances0.shape[0]), 2):
+        c = np.square(abs(distances1[n][m] - distances0[n][m]))
+        cost += c
+    return cost
+
+def print_cost(distances0, distances1):
+    assert(distances0.shape == distances1.shape)
+    cost = 0
+    for n, m in itertools.combinations(range(0, distances0.shape[0]), 2):
+        c = np.square(abs(distances1[n][m] - distances0[n][m]))
+        print("{n} -> {m}: expected: {e}, found: {f}, cost: {c}".format(
+            n = n, m = m, e = distances0[n][m], f = distances1[n][m], c = c))
+        cost += c
+    print(cost)
+    return cost
 
 def build_distance_matrix_from_points(points):
     distance_matrix = np.ndarray((len(points), len(points)))
@@ -90,20 +110,49 @@ def build_distance_matrix_from_points(points):
     return distance_matrix
 
 def run(n, **kwargs):
-    distance_matrix = build_distance_matrix_from_distances(n, **kwargs)
+    distance_matrix_target = build_distance_matrix_from_distances(n, kwargs)
     p0 = Point(0, 0)
-    p1 = Point(distance_matrix[0][1], 0)
-    points = initial_trilateration(p0, p1, distance_matrix)
-    points = trilateration_phase(points, distance_matrix)
-    distance_matrix = build_distance_matrix_from_points(points)
+    p1 = Point(distance_matrix_target[0][1], 0)
+    points = initial_trilateration(p0, p1, distance_matrix_target)
+    best_points = points
+    distance_matrix_calculated = build_distance_matrix_from_points(points)
+    best_cost = print_cost(distance_matrix_target, distance_matrix_calculated)
+    best_distance_matrix = distance_matrix_calculated
+    for phase in range(10):
+        points = trilateration_phase(points, distance_matrix_target)
+        distance_matrix_calculated = build_distance_matrix_from_points(points)
+        cost = calculate_cost(distance_matrix_target, distance_matrix_calculated)
+        if cost <= best_cost:
+            print("-------------------------------------")
+            print("Phase: {p}".format(p = phase))
+            print(points)
+            best_cost = cost
+            best_points = points
+            best_distance_matrix = distance_matrix_calculated
+            print(points)
+            print(cost)
+    print("----------------BEST-----------------")
+    print_cost(distance_matrix_target, best_distance_matrix)
+    print(best_points)
     return points
+
+def noisify(v):
+    return v * (1 + random.gauss(0, 0.01))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "Calculate coordinates from side lengths")
     parser.add_argument('-n', default = 4, type = int, help = "Number of array elements")
     args = parser.parse_args()
-    #distances = get_measurements_from_user(args.n)
-    #points = run(args.n, **distances)\
-    points = run(4, **{'d01': 4.4, 'd02': 5.1, 'd03': 4.8, 'd12': 3.9, 'd13': 5.8, 'd23': 2.1})
+    #distances = get_measurements_from_user(args.n){'d01': noisify(4.0), 
+    distances = { 'd01': noisify(4.0), 
+                  'd02': noisify(5.0), 
+                  'd03': noisify(5.09901951359), 
+                  'd12': noisify(4.12310562562),
+                  'd13': noisify(5.83095189485),
+                  'd23': noisify(2.2360679775)}
+    target_matrix = build_distance_matrix_from_distances(args.n, distances)
+    points = run(args.n, **distances)
+    result_matrix = build_distance_matrix_from_points(points)
+    print_cost(target_matrix, result_matrix)
     for point in points:
         print(point)
