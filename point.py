@@ -10,9 +10,9 @@ class Point:
         self.y = float(y)
 
     def __eq__(self, other):
-        if self.x != other.x:
+        if round(self.x, 7) != round(other.x, 7):
             return False
-        if self.y != other.y:
+        if round(self.y, 7) != round(other.y, 7):
             return False
         return True
 
@@ -26,6 +26,9 @@ class Point:
 
     def __div__(self, scale):
         return Point(self.x/float(scale), self.y/float(scale))
+
+    def __repr__(self):
+        return "({x}, {y})".format(x = self.x, y = self.y)
 
     def delta_to_other(self, other):
         """ Returns a hash like {'x': delta-x, 'y': delta-y}

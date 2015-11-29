@@ -3,6 +3,8 @@
 import argparse
 import numpy as np
 import itertools
+from point import Point
+from circle import Circle
 
 def get_measurements_from_user(n):
     """ n: number of elements. 
@@ -27,12 +29,20 @@ def get_measurements_from_user(n):
     print distances
     return distances
 
+def average_points(points):
+    """ Points is a list of points
+    """
+    return sum(points, Point(0, 0))/len(points)
+
 def initial_trilateration(p0, p1, distance_matrix):
+    points = [p0, p1]
     for target_number in range(2, distance_matrix.shape[0]):
         d0t = distance_matrix[0][target_number]
         c0t = Circle(p0, d0t)
         d1t = distance_matrix[1][target_number]
         c1t = Circle(p1, d1t)
+        points.append(c0t.positive_intersection_with(c1t))
+    return points
 
 def build_distance_matrix(n, **kwargs):
     """ n = number of elements.
@@ -51,12 +61,17 @@ def build_distance_matrix(n, **kwargs):
     return distance_matrix
 
 def run(n, **kwargs):
-    distance_matrix = np.zeros((n, n))
-    points = []
-    return []
+    distance_matrix = build_distance_matrix(n, **kwargs)
+    p0 = Point(0, 0)
+    p1 = Point(distance_matrix[0][1], 0)
+    points = initial_trilateration(p0, p1, distance_matrix)
+    return points
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "Calculate coordinates from side lengths")
     parser.add_argument('-n', default = 4, type = int, help = "Number of array elements")
     args = parser.parse_args()
-    get_measurements_from_user(args.n)
+    distances = get_measurements_from_user(args.n)
+    points = run(args.n, **distances)
+    for point in points:
+        print(point)
