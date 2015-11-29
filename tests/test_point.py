@@ -41,3 +41,10 @@ class PointTester(unittest.TestCase):
         self.assertNotEqual(self.p0, self.p1)
         p0_dup = Point(self.p0.x, self.p0.y)
         self.assertEqual(self.p0, p0_dup)
+
+    def test_average(self):
+        points = [self.p0, self.p1, self.p1]
+        expected = Point((self.p0.x + self.p1.x + self.p1.x)/3.0,
+                         (self.p0.y + self.p1.y + self.p1.y)/3.0)
+        actual = sum(points, Point(0,0))/len(points)  # starting element is Point(0,0)
+        self.assertEqual(expected, actual)

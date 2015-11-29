@@ -23,3 +23,9 @@ class Circle:
         p3 = p2 + (grad.rotated(+np.pi/2).to_unit() * h)
         p4 = p2 + (grad.rotated(-np.pi/2).to_unit() * h)
         return [p3, p4]
+
+    def positive_intersection_with(self, other):
+        points = self.intersection_with(other)
+        positive_y = [point for point in points if point.y > 0]
+        assert(len(positive_y) == 1)
+        return positive_y[0]

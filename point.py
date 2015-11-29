@@ -24,6 +24,9 @@ class Point:
         return Point(self.x * scale,
                      self.y * scale)
 
+    def __div__(self, scale):
+        return Point(self.x/float(scale), self.y/float(scale))
+
     def delta_to_other(self, other):
         """ Returns a hash like {'x': delta-x, 'y': delta-y}
         """
