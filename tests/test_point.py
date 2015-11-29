@@ -48,3 +48,11 @@ class PointTester(unittest.TestCase):
                          (self.p0.y + self.p1.y + self.p1.y)/3.0)
         actual = sum(points, Point(0,0))/len(points)  # starting element is Point(0,0)
         self.assertEqual(expected, actual)
+
+    def test_closest(self):
+        p0 = Point(0, 0)
+        p1 = Point(1, 1)
+        p2 = Point(2, 2)
+        p3 = Point(3, 3)
+        p4 = Point(4, 4)
+        self.assertEqual(p2, Point(2, 2.5).get_closest([p0, p1, p2, p3, p4]))

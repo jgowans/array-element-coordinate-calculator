@@ -41,6 +41,19 @@ class Point:
         delta = self.delta_to_other(other)
         return np.sqrt(np.square(delta.x) + np.square(delta.y))
 
+    def get_closest(self, others):
+        """ Others is a list of points. 
+        Return the point in others which is closest to thi
+        """
+        smallest_distance = self.distance_to_other(others[0])
+        best_point = others[0]
+        for other in others:
+            distance = self.distance_to_other(other)
+            if distance < smallest_distance:
+                smallest_distance = distance
+                best_point = other
+        return best_point
+
     def rotated(self, phi):
         """ Counterclockwise rotation by phi  radians
         """
