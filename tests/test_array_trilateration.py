@@ -44,7 +44,7 @@ class ArrayTrilateration(unittest.TestCase):
             [self.d02, self.d12,        0, self.d23],
             [self.d03, self.d13, self.d23,        0]
         ])
-        output = array_trilateration.build_distance_matrix(4, **self.distances)
+        output = array_trilateration.build_distance_matrix_from_distances(4, **self.distances)
         self.assertEqual(output.shape, expected.shape)
         self.assertTrue((output == expected).all())
 
