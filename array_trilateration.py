@@ -137,7 +137,7 @@ def run(n, **kwargs):
     return points
 
 def noisify(v):
-    return v * (1 + random.gauss(0, 0.01))
+    return v * (1 + random.gauss(0, 0.03))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "Calculate coordinates from side lengths")

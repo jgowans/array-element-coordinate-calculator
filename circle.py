@@ -13,8 +13,16 @@ class Circle:
         """
         d = self.distance_between_centres(other)
         if(d > (self.r + other.r)):
+            print(self.centre)
+            print(self.r)
+            print(other.centre)
+            print(other.r)
             raise Exception("No solution - circles are separate")
         if(d < np.abs(self.r - other.r)):
+            print(self.centre)
+            print(self.r)
+            print(other.centre)
+            print(other.r)
             raise Exception("No solution - once contain in the other")
         grad = self.centre.delta_to_other(other.centre)
         a = (np.square(self.r) - np.square(other.r) + np.square(d))/(2.0*d)
