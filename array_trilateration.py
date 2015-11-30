@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import itertools
 import random
+import json
 from point import Point
 from circle import Circle
 
@@ -87,18 +88,18 @@ def calculate_cost(distances0, distances1):
     assert(distances0.shape == distances1.shape)
     cost = 0
     for n, m in itertools.combinations(range(0, distances0.shape[0]), 2):
-        c = np.square(abs(distances1[n][m] - distances0[n][m]))
-        cost += c
+        c = 100*abs(1-(distances1[n][m]/distances0[n][m]))  # get percentage error squared
+        cost += np.square(c)
     return cost
 
 def print_cost(distances0, distances1):
     assert(distances0.shape == distances1.shape)
     cost = 0
     for n, m in itertools.combinations(range(0, distances0.shape[0]), 2):
-        c = np.square(abs(distances1[n][m] - distances0[n][m]))
-        print("{n} -> {m}: expected: {e}, found: {f}, cost: {c}".format(
+        c = 100*abs(1-(distances1[n][m]/distances0[n][m]))  # get percentage error squared
+        print("{n} -> {m}: expected: {e:.3f}, found: {f:.3f}, error: {c:.3f}%".format(
             n = n, m = m, e = distances0[n][m], f = distances1[n][m], c = c))
-        cost += c
+        cost += np.square(c)
     print(cost)
     return cost
 
@@ -116,43 +117,59 @@ def run(n, **kwargs):
     points = initial_trilateration(p0, p1, distance_matrix_target)
     best_points = points
     distance_matrix_calculated = build_distance_matrix_from_points(points)
-    best_cost = print_cost(distance_matrix_target, distance_matrix_calculated)
+    best_cost = calculate_cost(distance_matrix_target, distance_matrix_calculated)
     best_distance_matrix = distance_matrix_calculated
-    for phase in range(10):
+    for phase in range(30):
         points = trilateration_phase(points, distance_matrix_target)
         distance_matrix_calculated = build_distance_matrix_from_points(points)
         cost = calculate_cost(distance_matrix_target, distance_matrix_calculated)
         if cost <= best_cost:
-            print("-------------------------------------")
-            print("Phase: {p}".format(p = phase))
-            print(points)
+            #print("-------------------------------------")
+            #print("Phase: {p}".format(p = phase))
             best_cost = cost
             best_points = points
             best_distance_matrix = distance_matrix_calculated
-            print(points)
-            print(cost)
-    print("----------------BEST-----------------")
-    print_cost(distance_matrix_target, best_distance_matrix)
-    print(best_points)
-    return points
+            #print(points)
+            #print(cost)
+    #print("----------------BEST-----------------")
+    #print_cost(distance_matrix_target, best_distance_matrix)
+    #print(best_points)
+    return best_points
+
+def remove_origin_offset(points):
+    centroid = get_centroid(points)
+    return [point - centroid for point in points]
 
 def noisify(v):
-    return v * (1 + random.gauss(0, 0.03))
+    #return v * (1 + random.gauss(0, 0.03))
+    return round(v,1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "Calculate coordinates from side lengths")
     parser.add_argument('-n', default = 4, type = int, help = "Number of array elements")
     args = parser.parse_args()
     #distances = get_measurements_from_user(args.n){'d01': noisify(4.0), 
-    distances = { 'd01': noisify(4.0), 
-                  'd02': noisify(5.0), 
-                  'd03': noisify(5.09901951359), 
-                  'd12': noisify(4.12310562562),
-                  'd13': noisify(5.83095189485),
-                  'd23': noisify(2.2360679775)}
+    #distances = { 'd01': noisify(4.0), 
+    #              'd02': noisify(5.0), 
+    #              'd03': noisify(5.09901951359), 
+    #              'd12': noisify(4.12310562562),
+    #              'd13': noisify(5.83095189485),
+    #              'd23': noisify(2.2360679775)}
+    distances = { 'd01': noisify(1.41), 
+                  'd02': noisify(2), 
+                  'd03': noisify(1.41), 
+                  'd12': noisify(1.41),
+                  'd13': noisify(2),
+                  'd23': noisify(1.41)}
     target_matrix = build_distance_matrix_from_distances(args.n, distances)
     points = run(args.n, **distances)
     result_matrix = build_distance_matrix_from_points(points)
     print_cost(target_matrix, result_matrix)
-    for point in points:
-        print(point)
+    points = remove_origin_offset(points)
+    array = []
+    for idx, point in enumerate(points):
+        print("Point {idx} : ({p.x:.4f}, {p.y:.4f})".format(idx = idx, p = point))
+        array.append({'x':point.x, 'y':point.y})
+    array_json = json.dumps(array, indent=2)
+    with open('array_geometry.json', 'w') as f:
+        f.write(array_json)
