@@ -27,8 +27,7 @@ def get_measurements_from_user(n):
             except (TypeError, AssertionError):
                 print("Invalid input! Enter -1 for no reading taken. Re-try.")
         key = 'd{n}{m}'.format(n = el0, m = el1)
-        distances[key] = d
-    print distances
+        distances[key] = round(d, 4)
     return distances
 
 def get_centroid(points):
@@ -148,7 +147,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "Calculate coordinates from side lengths")
     parser.add_argument('-n', default = 4, type = int, help = "Number of array elements")
     args = parser.parse_args()
-    #distances = get_measurements_from_user(args.n){'d01': noisify(4.0), 
     #distances = { 'd01': noisify(4.0), 
     #              'd02': noisify(5.0), 
     #              'd03': noisify(5.09901951359), 
@@ -161,6 +159,8 @@ if __name__ == '__main__':
                   'd12': noisify(1.41),
                   'd13': noisify(2),
                   'd23': noisify(1.41)}
+    distances = get_measurements_from_user(args.n)
+    print(distances)
     target_matrix = build_distance_matrix_from_distances(args.n, distances)
     points = run(args.n, **distances)
     result_matrix = build_distance_matrix_from_points(points)
