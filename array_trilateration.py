@@ -7,6 +7,7 @@ import random
 import json
 from point import Point
 from circle import Circle
+import plotter
 
 def get_measurements_from_user(n):
     """ n: number of elements. 
@@ -137,7 +138,20 @@ def run(n, **kwargs):
 
 def remove_origin_offset(points):
     centroid = get_centroid(points)
-    return [point - centroid for point in points]
+    points = [point - centroid for point in points]
+    # now rotate
+    theta = np.arctan2(points[0].y, points[0].x)
+    theta = -theta  # want to rotate backwards
+    rot_matrix = np.array([[np.cos(theta), -np.sin(theta)],
+                          [np.sin(theta), np.cos(theta)]])
+    rotated_points = []
+    for point in points:
+        point_vector = np.array([[point.x],
+                                 [point.y]])
+        rotated_point_vector = np.dot(rot_matrix, point_vector)
+        rotated_points.append(Point(rotated_point_vector[0][0],
+                                    rotated_point_vector[1][0]))
+    return rotated_points
 
 def noisify(v):
     #return v * (1 + random.gauss(0, 0.03))
@@ -147,19 +161,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "Calculate coordinates from side lengths")
     parser.add_argument('-n', default = 4, type = int, help = "Number of array elements")
     args = parser.parse_args()
-    #distances = { 'd01': noisify(4.0), 
-    #              'd02': noisify(5.0), 
-    #              'd03': noisify(5.09901951359), 
-    #              'd12': noisify(4.12310562562),
-    #              'd13': noisify(5.83095189485),
-    #              'd23': noisify(2.2360679775)}
     distances = { 'd01': noisify(1.41), 
                   'd02': noisify(2), 
                   'd03': noisify(1.41), 
                   'd12': noisify(1.41),
                   'd13': noisify(2),
                   'd23': noisify(1.41)}
-    distances = get_measurements_from_user(args.n)
+    distances = { 'd01': 0.72,
+                  'd02': 1.005,
+                  'd03': 0.480,
+                  'd12': 0.79,
+                  'd13': 1.090,
+                  'd23': 1.015}
+    #distances = get_measurements_from_user(args.n)
     print(distances)
     target_matrix = build_distance_matrix_from_distances(args.n, distances)
     points = run(args.n, **distances)
@@ -171,5 +185,6 @@ if __name__ == '__main__':
         print("Point {idx} : ({p.x:.4f}, {p.y:.4f})".format(idx = idx, p = point))
         array.append({'x':point.x, 'y':point.y})
     array_json = json.dumps(array, indent=2)
+    plotter.plot_antenna_array(points)
     with open('array_geometry.json', 'w') as f:
         f.write(array_json)
