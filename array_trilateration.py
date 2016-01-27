@@ -167,12 +167,12 @@ if __name__ == '__main__':
                   'd12': noisify(1.41),
                   'd13': noisify(2),
                   'd23': noisify(1.41)}
-    distances = { 'd01': 0.72,
-                  'd02': 1.005,
-                  'd03': 0.480,
-                  'd12': 0.79,
-                  'd13': 1.090,
-                  'd23': 1.015}
+    distances = { 'd01': 0.71,
+                  'd02': 1.010,
+                  'd03': 0.510,
+                  'd12': 0.80,
+                  'd13': 1.095,
+                  'd23': 1.010}
     #distances = get_measurements_from_user(args.n)
     print(distances)
     target_matrix = build_distance_matrix_from_distances(args.n, distances)
